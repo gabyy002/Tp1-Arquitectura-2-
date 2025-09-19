@@ -1,0 +1,85 @@
+// Pines Motores
+const int in1 = 2; // Motor A
+const int in2 = 3; // PWM para Motor A (velocidad)
+const int in3 = 4; // Motor B
+const int in4 = 5; // PWM para Motor B (velocidad)
+
+// Pines HC-SR04
+const int trigPin = 6;
+const int echoPin = 7;
+
+// Variables
+long duracion;
+int distancia;
+int velocidadMotorB = 150; // Velocidad máxima del Motor A (0-255)
+int velocidadMotorA = 90; // Velocidad máxima del Motor B (0-255)
+
+void setup() {
+  // Motores
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT); // Usamos pin 3 para PWM
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT); // Usamos pin 5 para PWM
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  // Sensor distancia
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  digitalWrite(13, LOW);   // LED apaga
+  // Motores apagados al inicio
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  
+  digitalWrite(13, LOW);   // LED apaga
+  // --- medir distancia ---
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duracion = pulseIn(echoPin, HIGH);
+  distancia = duracion * 0.034 / 2;
+
+  Serial.print("Distancia: ");
+  Serial.print(distancia);
+  Serial.println(" cm");
+
+  // --- lógica de movimiento ---
+  if (distancia <= 15) {
+    // Obstáculo cerca -> girar (solo Motor B)
+    digitalWrite(LED_BUILTIN, HIGH);  // LED enciende
+
+    //Motor A
+    digitalWrite(in1, LOW);
+    analogWrite(in2, velocidadMotorA);
+
+    // Motor B
+    digitalWrite(in3, HIGH);
+    analogWrite(in4, velocidadMotorB);
+
+    Serial.println("Obstáculo cerca: girando");
+  } else {
+    // Camino libre -> avanzar recto
+    // Motor A
+    digitalWrite(in1, LOW);
+    analogWrite(in2, velocidadMotorA);
+
+    // Motor B
+    digitalWrite(in3, LOW);
+    analogWrite(in4, velocidadMotorB);
+
+    Serial.println("Camino libre: avanzando recto");
+  }
+
+  delay(200);
+}
