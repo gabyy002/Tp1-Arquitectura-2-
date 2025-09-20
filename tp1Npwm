@@ -1,0 +1,83 @@
+// Pines Motores
+const int in1 = 2; // Motor A (dirección)
+const int in2 = 3; // Motor A (habilitación)
+const int in3 = 4; // Motor B (dirección)
+const int in4 = 5; // Motor B (habilitación)
+
+// Pines HC-SR04
+const int trigPin = 6;
+const int echoPin = 7;
+
+// Variables
+long duracion;
+int distancia;
+
+void setup() {
+  // Motores
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  // Sensor distancia
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  digitalWrite(13, LOW);   // LED apaga
+  // Motores apagados al inicio
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  digitalWrite(13, LOW);   // LED apaga
+
+  // --- medir distancia ---
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duracion = pulseIn(echoPin, HIGH);
+  distancia = duracion * 0.034 / 2;
+
+  Serial.print("Distancia: ");
+  Serial.print(distancia);
+  Serial.println(" cm");
+
+  // --- lógica de movimiento ---
+  if (distancia <= 15) {
+    digitalWrite(LED_BUILTIN, HIGH);  // LED enciende
+
+    // Motor A hacia adelante
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+
+    // Motor B hacia atrás
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, HIGH);
+
+    Serial.println("Obstáculo cerca: girando");
+  } else {
+    // Camino libre -> avanzar recto
+
+    // Motor A hacia adelante
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+
+    // Motor B hacia adelante
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+
+    Serial.println("Camino libre: avanzando recto");
+  }
+
+  delay(200);
+}
